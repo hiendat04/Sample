@@ -1,19 +1,18 @@
 package com.demo.sample.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.demo.sample.configuraion.Translator;
 import com.demo.sample.dto.request.UserRequestDTO;
 import com.demo.sample.dto.response.ResponseData;
 import com.demo.sample.dto.response.ResponseError;
 import com.demo.sample.exception.ResourceNotFoundException;
-import com.demo.sample.service.UserService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,16 +30,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RestController
 @RequestMapping("/users")
 @Validated
+@Slf4j
 public class UserController {
 
-    @Autowired
-    private UserService userService;
-
-    @PostMapping(value = "/", headers = "apiKey=v1.0")
+    @PostMapping("/")
     public ResponseData<Integer> addUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         try {
-            userService.addUser(userRequestDTO);
-            return new ResponseData<>(HttpStatus.CREATED.value(), "User added successfully", 1);
+            log.info("Request add user = {} {}", userRequestDTO.getFirstName(), userRequestDTO.getLastName());
+            return new ResponseData<>(HttpStatus.CREATED.value(), Translator.toLocale("user.add.success"), 1);
         } catch (ResourceNotFoundException e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
@@ -49,25 +45,25 @@ public class UserController {
 
     @PutMapping("/{userId}")
     public ResponseData<?> updateUser(@Min(1) @PathVariable int userId, @RequestBody UserRequestDTO userRequestDTO) {
-        System.out.println("Request update user id = " + userId);
-        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User updated successfully");
+        log.info("Request update user id = {}", userId);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), Translator.toLocale("user.upd.success"));
     }
 
     @PatchMapping("/{userId}")
     public ResponseData<?> changeStatus(@Min(1) @PathVariable int userId, @Min(1) @RequestParam int status) {
-        System.out.println("Request change user status, usrId = " + userId);
+        log.info("Request change user status, usrId = {}", userId);
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User status updated successfully");
     }
 
     @DeleteMapping("/{userId}")
     public ResponseData<?> deleteUser(@Min(1) @PathVariable int userId) {
-        System.out.println("Request delete user with id  = " + userId);
+        log.info("Request delete user with id  = {}", userId);
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "User deleted successfully");
     }
 
     @GetMapping("/{userId}")
     public ResponseData<UserRequestDTO> getUser(@PathVariable long userId) {
-        System.out.println("Request user id = " + userId);
+        log.info("Request user id = {}", userId);
         return new ResponseData<>(HttpStatus.OK.value(), "User fetched successfully",
                 new UserRequestDTO("Dat", "Mai", "0909592960", "hiendat04@gmail.com"));
 
